@@ -35,10 +35,12 @@ class RoundedBorder implements Border {
 
 public class Login extends JPanel{
     CardLayout cardLayout;
+    Send send;
     JPanel content;
-    Login(JPanel c, CardLayout layout){
+    Login(JPanel c, CardLayout layout, Send s){
         this.content = c;
         this.cardLayout = layout;
+        this.send = s;
         UI();
     }
     void UI() {
@@ -82,10 +84,12 @@ public class Login extends JPanel{
         });
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                System.out.print("122");
-               if(fieldUser.getText().equals("abc") && new String(password.getPassword()).equals("1234")) {
-                    System.out.print("124");
-               }
+//                System.out.print("122");
+//               if(fieldUser.getText().equals("abc") && new String(password.getPassword()).equals("1234")) {
+//                    System.out.print("124");
+//               }
+               send.sendData("Username: " + fieldUser.getText());
+               send.sendData("Password: " + password.getPassword());
             }
         } );
 

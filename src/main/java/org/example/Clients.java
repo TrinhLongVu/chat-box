@@ -8,9 +8,10 @@ import java.net.UnknownHostException;
 
 public class Clients {
     private Socket s;
+    private Send send;
     Clients() {
-        createUI();
         connect();
+        createUI();
     }
     void connect() {
         try {
@@ -18,7 +19,8 @@ public class Clients {
             System.out.println(s.getPort());
             System.out.println("Talking to Server");
             new receiveThread(s).start();
-            new sendClient(s).start();
+            send = new Send(s);
+            send.start();
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
@@ -35,7 +37,7 @@ public class Clients {
         JPanel content = new JPanel();
         content.setLayout(cardLayout);
 
-        content.add(new Login(content, cardLayout), "login");
+        content.add(new Login(content, cardLayout, send), "login");
         content.add(new Signup(content, cardLayout), "signup");
         cardLayout.show(content, "login");
 

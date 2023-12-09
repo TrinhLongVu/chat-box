@@ -29,9 +29,9 @@ class receiveThread extends Thread {
     }
 }
 
-class sendClient extends Thread {
+class Send extends Thread {
     BufferedWriter bw ;
-    sendClient(Socket ss) {
+    Send(Socket ss) {
         OutputStream os = null;
         try {
             os = ss.getOutputStream();
@@ -40,7 +40,16 @@ class sendClient extends Thread {
         }
         bw = new BufferedWriter(new OutputStreamWriter(os));
     }
-    public void start() {
+    public void sendData(String data){
+        try {
+            bw.write(data);
+            bw.newLine();
+            bw.flush();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public void run() {
         try {
             do {
                 DataInputStream din = new DataInputStream(System.in);
@@ -68,7 +77,7 @@ class clientThread extends Thread {
         do
         {
             new receiveThread(ss).start();
-            new sendClient(ss).start();
+            new Send(ss).start();
         }
         while (true);
     }
