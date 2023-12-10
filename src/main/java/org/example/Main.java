@@ -5,11 +5,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
-class receiveThread extends Thread {
+class receiveOfServer extends Thread {
     String receiveMsg = "";
+    database db;
     BufferedReader br;
-    receiveThread ( Socket ss) {
+    receiveOfServer ( Socket ss, database d) {
         InputStream is = null;
+        this.db = d;
         try {
             is = ss.getInputStream();
         } catch (IOException e) {
@@ -22,6 +24,11 @@ class receiveThread extends Thread {
             do {
                 this.receiveMsg = this.br.readLine();
                 System.out.println("Received : " + receiveMsg);
+                String data[] = receiveMsg.split(",");
+                if(data[0].equals("TagSignup")){
+                    System.out.println("11");
+                    db.postUser(data[1], data[2]);
+                }
             }while (true);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -29,9 +36,9 @@ class receiveThread extends Thread {
     }
 }
 
-class Send extends Thread {
+class SendOfServer extends Thread {
     BufferedWriter bw ;
-    Send(Socket ss) {
+    SendOfServer(Socket ss) {
         OutputStream os = null;
         try {
             os = ss.getOutputStream();
@@ -67,8 +74,10 @@ class Send extends Thread {
 
 class clientThread extends Thread {
     private Socket ss;
-    clientThread(Socket a) {
+    database db;
+    clientThread(Socket a, database d) {
         this.ss = a;
+        this.db = d;
     }
     public void run() {
 
@@ -76,8 +85,8 @@ class clientThread extends Thread {
         System.out.println(ss.getPort());
         do
         {
-            new receiveThread(ss).start();
-            new Send(ss).start();
+            new receiveOfServer(ss, db).start();
+            new SendOfServer(ss).start();
         }
         while (true);
     }
@@ -95,14 +104,19 @@ class Client {
 }
 
 public class Main {
-    public static void main(String[] args) {
+    database db;
+    Main() {
+        db = new database();
+        createServer();
+    }
+    void createServer() {
         try
         {
             ServerSocket s = new ServerSocket(3001);
             do
             {
                 Socket ss = s.accept(); //synchronous
-                new clientThread(ss).start();
+                new clientThread(ss, db).start();
             }
             while (true);
         }
@@ -110,5 +124,8 @@ public class Main {
         {
             System.out.println("There're some error");
         }
+    }
+    public static void main(String[] args) {
+        new Main();
     }
 }
