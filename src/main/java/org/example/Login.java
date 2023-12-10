@@ -52,7 +52,7 @@ public class Login extends JPanel{
         JLabel labelUser = new JLabel("User");
         JTextField fieldUser = new JTextField();
         JLabel labelpassword = new JLabel("Password");
-        JPasswordField password = new JPasswordField();
+        JTextField password = new JTextField();
         JButton button = new JButton("login");
         JLabel signUp = new JLabel("Signup");
 
@@ -84,11 +84,7 @@ public class Login extends JPanel{
         });
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-               if(fieldUser.getText().equals("abc") && new String(password.getPassword()).equals("1234")) {
-                    cardLayout.show(content, "homepage");
-               }
-               send.sendData("Username: " + fieldUser.getText());
-               send.sendData("Password: " + password.getPassword());
+               send.sendData("TagLogin," + fieldUser.getText() + "," + password.getText());
             }
         } );
 

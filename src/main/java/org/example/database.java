@@ -47,6 +47,23 @@ public class database {
         }
     }
 
+    public int checkLogin(String username, String password) {
+        String checkQuery = "select idClient from Client where username = ? and password = ?";
+        try (PreparedStatement preparedStatement = con.prepareStatement(checkQuery)) {
+            preparedStatement.setString(1, username);
+            preparedStatement.setString(2, password);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                int idClient = resultSet.getInt("idClient");
+                return idClient;
+            } else {
+                return -1;
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
     public void closeConnect() throws SQLException {
         this.con.close();
     }

@@ -40,6 +40,38 @@ class Send extends Thread {
         }
     }
 }
+class Recieve extends Thread {
+    String receiveMsg = "";
+    CardLayout cardLayout;
+    JPanel content;
+    BufferedReader br;
+    Recieve ( Socket ss, CardLayout cardLayout, JPanel content) {
+        InputStream is = null;
+        this.cardLayout = cardLayout;
+        this.content = content;
+        try {
+            is = ss.getInputStream();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        br = new BufferedReader(new InputStreamReader(is));
+    }
+    public void run() {
+        try {
+            do {
+                this.receiveMsg = this.br.readLine();
+                System.out.println("Received : " + receiveMsg);
+                if(this.receiveMsg.equals("login")) {
+
+                    // get username.
+                    cardLayout.show(content, "homepage");
+                }
+            }while (true);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
 
 public class Clients {
     private Socket s;
@@ -77,7 +109,7 @@ public class Clients {
         content.add(new homePageClient(), "homepage");
 
         cardLayout.show(content, "login");
-
+        new Recieve(s, cardLayout, content).start();
         frame.add(content);
         frame.setBounds(10,10,400,500);
         frame.setVisible(true);
