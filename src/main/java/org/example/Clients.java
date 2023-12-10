@@ -38,7 +38,9 @@ public class Clients {
         content.setLayout(cardLayout);
 
         content.add(new Login(content, cardLayout, send), "login");
-        content.add(new Signup(content, cardLayout), "signup");
+        content.add(new Signup(content, cardLayout, send), "signup");
+        content.add(new homePageClient(), "homepage");
+
         cardLayout.show(content, "login");
 
         frame.add(content);

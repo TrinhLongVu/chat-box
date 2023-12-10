@@ -84,10 +84,9 @@ public class Login extends JPanel{
         });
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-//                System.out.print("122");
-//               if(fieldUser.getText().equals("abc") && new String(password.getPassword()).equals("1234")) {
-//                    System.out.print("124");
-//               }
+               if(fieldUser.getText().equals("abc") && new String(password.getPassword()).equals("1234")) {
+                    cardLayout.show(content, "homepage");
+               }
                send.sendData("Username: " + fieldUser.getText());
                send.sendData("Password: " + password.getPassword());
             }

@@ -3,15 +3,19 @@ package org.example;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class Signup extends JPanel {
     CardLayout cardLayout;
+    Send send;
     JPanel content;
-    Signup(JPanel c, CardLayout layout){
+    Signup(JPanel c, CardLayout layout, Send s){
         this.cardLayout = layout;
         this.content = c;
+        this.send = s;
         UI();
     }
     void UI() {
@@ -27,8 +31,8 @@ public class Signup extends JPanel {
         JLabel labelpassword = new JLabel("Password");
 
         JTextField fieldUser = new JTextField();
-        JPasswordField password = new JPasswordField();
-        JPasswordField cpassword = new JPasswordField();
+        JTextField password = new JTextField();
+        JTextField cpassword = new JTextField();
         JButton button = new JButton("Sign Up");
         JLabel loginButton = new JLabel("Login");
 
@@ -63,6 +67,15 @@ public class Signup extends JPanel {
                 cardLayout.show(content, "login");
             }
         });
+
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("clicked");
+                if(password.getText().equals(cpassword.getText())) {
+                    send.sendData("TagSignup," + fieldUser.getText() + "," + password.getText());
+                }
+            }
+        } );
 
 
         usernamePanel.add(labelUser);
