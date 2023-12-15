@@ -64,19 +64,21 @@ class Recieve extends Thread {
                 homePageClient a = null;
                 String datas[] = receiveMsg.split(",");
                 System.out.println("Received : " + receiveMsg);
+
                 if(datas[0].equals("login")) {
-                    a = new homePageClient(datas);
+                    String dt = "login,1,hoa$2,Nam,hoa:hi#nam:hello#nam:xinchao$3,Trong,trong:hi hoa,hoa:hi trong";
+                    a = new homePageClient(dt);
                     // get username.
                     content.add(a, "homepage");
                     cardLayout.show(content, "homepage");
                     Thread.sleep(1000);
-                    a.data(0,"1000");
+                    a.appendContent("3","hello ban nha");
                     Thread.sleep(2000);
-                    a.data(0,"trong000");
+                    a.appendContent("2","ok ban");
+                }else if(datas[0].equals("send")) {
+                    datas[1] = "12";
+                    System.out.println("ok");
                 }
-//                else if(datas[0].equals("chat")) {
-////                    a.createUi();
-//                }
             }while (true);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -116,6 +118,7 @@ public class Clients {
         CardLayout cardLayout = new CardLayout();
         JPanel content = new JPanel();
         content.setLayout(cardLayout);
+//        JPanel homepage = new homePageClient(datas);
 
         content.add(new Login(content, cardLayout, send), "login");
         content.add(new Signup(content, cardLayout, send), "signup");

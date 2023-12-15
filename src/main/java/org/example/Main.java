@@ -66,10 +66,16 @@ class receiveOfServer extends Thread {
                         }
                         clients.add(new ClientOfServer(user.getId(), ss, user.getUsername()));
                         send.sendData(loginedClient);
+                        Thread.sleep(1000);
+                        send.sendData("send,2,NguyenDuy,1,NguyenHuyHoa,hello");
                     }
+                }else if(data[0].equals("send")) {
+
                 }
             }while (true);
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }

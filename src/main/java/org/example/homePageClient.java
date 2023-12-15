@@ -4,189 +4,193 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-class chat {
-    private String _id;
-    private String _content;
+class clientFormatData {
+    private String id;
+    private String name;
+    private String content;
+    private int index;
 
-    chat(String id, String content) {
-        this._id = id;
-        this._content = content;
+    clientFormatData(String id, String name, String content) {
+        this.id = id;
+        this.name = name;
+        this.content = content;
+    }
+    void setIndex(int index) {
+        this.index = index;
+    }
+    int getIndex(){
+        return this.index;
     }
 
     String getId() {
-        return this._id;
+        return this.id;
     }
+    String getName() {return this.name;}
 
     String getContent() {
-        return this._content;
-    }
-}
-
-class TextField extends Thread {
-    JTextArea text;
-    String content;
-    TextField(JTextArea text, String content) {
-        this.text = text;
-        this.content = content;
-    }
-
-    public void run() {
-        try {
-            SwingUtilities.invokeAndWait(new Runnable(){
-                public void run()
-                {
-                    text.append(content);
-                }
-            });
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
+        return this.content;
     }
 }
 
 public class homePageClient extends JPanel {
     String reciever;
-    String dataNameUser[];
+    JPanel sidebarPanel;
+    CardLayout cardLayout;
+    JPanel chatBox;
+    List<clientFormatData> clients = new ArrayList<>();
 
-    homePageClient(String datas[]) {
-        this.dataNameUser = datas;
-        SwingUtilities.invokeLater(() -> createUi());
-//        createUi();
-    }
-    String temp = "";
-    JTextArea text[];
-    public void data(int pos, String s) {
+    homePageClient(String data) {
         SwingUtilities.invokeLater(() -> {
-            this.temp = s;
-            text[pos].append(this.temp + "\n");
+            SplitData(data);
+            createUi();}
+        );
+    }
+    JTextArea text[];
+    public void appendContent(String id, String data) {
+        int pos = 0;
+        for (int i = 0; i < clients.size(); i++) {
+            if(clients.get(i).getId().equals(id)){
+                pos = clients.get(i).getIndex();
+            }
+        }
+        int finalPos = pos;
+        SwingUtilities.invokeLater(() -> {
+            text[finalPos].append(data + "\n");
+        });
+    }
+
+    public void appendSidebar(int pos, String s) {
+        SwingUtilities.invokeLater(() -> {
 
         });
     }
 
-    static List<chat> convertToChatList(String data) {
-        List<chat> chatList = new ArrayList<>();
 
-
-        String[] entries = data.split(", ");
+    static List<clientFormatData> convertToChatList(String data) {
+        List<clientFormatData> chatList = new ArrayList<>();
+        String[] entries = data.split("#");
         for (String entry : entries) {
-            String[] parts = entry.split(": ");
+            String[] parts = entry.split(":");
             if (parts.length == 2) {
                 String id = parts[0];
                 String content = parts[1];
-                chatList.add(new chat(id, content));
+                chatList.add(new clientFormatData(id, id, content));
             }
         }
         return chatList;
     }
 
+    private void handelBoxChat(String data, String id) {
+        List<clientFormatData> chatList = convertToChatList(data);
+        for (clientFormatData c : chatList) {
+            appendContent(id, c.getId() + ": " + c.getContent());
+        }
+    }
+
     void createUi() {
-        String a[] = {"nam", "hoai", "Duy"};
-        String data = "me: 123, hoai: 456, me: 111, me: 000";
-        List<chat> chatList = convertToChatList(data);
-        reciever = a[0];
-//        for (chat c : chatList) {
-//            System.out.println("ID: " + c.getId() + ", Content: " + c.getContent());
-//        }
-
-        System.out.println(temp);
-
-        JPanel sidebarPanel = new JPanel();
+        String nameOtherClients[] = {"nam", "hoai", "Duy"};
+        String data = "me:123,hoai:456,me:111,me:000";
+        List<clientFormatData> chatList = convertToChatList(data);
+        reciever = nameOtherClients[0];
+        /////////////////////////////
         JPanel header = new JPanel();
-        CardLayout cardLayout = new CardLayout();
-        JPanel chatBox = new JPanel(cardLayout);
-        JPanel contentPanels[] = new JPanel[a.length];
-        JLabel contentLabels[] = new JLabel[a.length];
-//        JTextArea text[] = new JTextArea[a.length];
-        text = new JTextArea[a.length];
+        sidebarPanel = new JPanel();
+        cardLayout = new CardLayout();
+        chatBox = new JPanel(cardLayout);
+        text = new JTextArea[nameOtherClients.length];
+        JPanel contentPanels[] = new JPanel[nameOtherClients.length];
+        JLabel contentLabels[] = new JLabel[nameOtherClients.length];
 
         setLayout(new BorderLayout());
         setBackground(Color.white);
-        sidebarPanel.setBackground(Color.WHITE);
-        header.setBackground(Color.RED);
 
-        sidebarPanel.setPreferredSize(new Dimension(100, 500));
+        header.setBackground(Color.RED);
         header.setPreferredSize(new Dimension(400, 50));
+
+        sidebarPanel.setBackground(Color.WHITE);
+        sidebarPanel.setPreferredSize(new Dimension(100, 500));
         sidebarPanel.setBorder(BorderFactory.createLineBorder(Color.black));
         sidebarPanel.setBackground(new Color(0xDFCBE1));
 
-        // declare component of content
-        for(int i = 0; i < a.length; i++) {
-            contentLabels[i] = new JLabel(a[i]);
+        System.out.println(clients.size());
+
+        for (int i = 0; i < clients.size(); i++) {
+            final int index = i;
+            clients.get(i).setIndex(index);
+            System.out.println(clients.get(i).getName());
+            contentLabels[i] = new JLabel(clients.get(i).getName());
             contentPanels[i] = new JPanel(new BorderLayout());
             text[i] = new JTextArea();
-        }
-
-        // setup background color
-        for(int i = 0; i < a.length; i++) {
-            contentLabels[i].setFont(new Font("Serif", Font.PLAIN, 30));
-            contentPanels[i].setBackground(Color.WHITE);
-            contentPanels[i].add(contentLabels[i], BorderLayout.NORTH);
-            chatBox.add(contentPanels[i], a[i]);
-            text[i].setEditable(false);
-            text[i].setFont(new Font("Serif", Font.PLAIN, 20));
-        }
-
-        for (int i = 0; i < a.length; i++) {
-            final int index = i;
             JTextField input = new JTextField();
             JButton submit = new JButton("submit");
             JPanel footer = new JPanel();
+            JButton button = new JButton(clients.get(i).getName());
 
-            for (chat c : chatList) {
-//                text[i].append(c.getId() + ": " + c.getContent() + "\n");
-                data(i, c.getId() + ": " + c.getContent());
-            }
-            System.out.println("temp:::::::" + temp);
+            contentLabels[i].setFont(new Font("Serif", Font.PLAIN, 30));
 
-//            text[i].append(this.temp);
-//            new TextField(text[i], temp).start();
-            contentPanels[i].add(text[i], BorderLayout.CENTER);
+            text[i].setFont(new Font("Serif", Font.PLAIN, 20));
+            text[i].setEditable(false);
 
             input.setFont(new Font("Serif", Font.PLAIN, 20));
             input.setPreferredSize(new Dimension(200, 30));
+
+            contentPanels[i].setBackground(Color.WHITE);
+            contentPanels[i].add(contentLabels[i], BorderLayout.NORTH);
+
             footer.setPreferredSize(new Dimension(300, 30));
-            footer.add(input);
-            footer.add(submit);
+            button.setBackground(new Color(255, 255, 255));
+            button.setPreferredSize(new Dimension(100, 35));
+
+            handelBoxChat(clients.get(i).getContent(), clients.get(i).getId());
+
             submit.addActionListener(
                     new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                             // handle send data to server
                             text[index].append("me :" + input.getText() + "\n");
                             System.out.println(reciever);
-
+//                            new Send(ss).sendData("send,1,hello");
                         }
                     });
-            contentPanels[i].add(footer, BorderLayout.SOUTH);
-        }
-
-        for (int i = 0; i < a.length; i++) {
-            JButton button = new JButton(a[i]);
-            final int index = i;
-            button.setPreferredSize(new Dimension(100, 35));
-            button.setBackground(new Color(255, 255, 255));
             button.addActionListener(
                     new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
-                            cardLayout.show(chatBox, a[index]);
-                            reciever = a[index];
+                            cardLayout.show(chatBox, clients.get(index).getName());
+                            reciever = clients.get(index).getName();
+//                            System.out.println(reciever);
                         }
                     }
             );
+
+
+            chatBox.add(contentPanels[i], clients.get(index).getName());
+            contentPanels[i].add(text[i], BorderLayout.CENTER);
+            footer.add(input);
+            footer.add(submit);
+            contentPanels[i].add(footer, BorderLayout.SOUTH);
             sidebarPanel.add(button);
         }
-
         add(sidebarPanel, BorderLayout.WEST);
         add(chatBox, BorderLayout.CENTER);
         add(header, BorderLayout.NORTH);
     }
 
-//    public static void main(String[] a) {
+    void SplitData(String data){
+        //String dt = "login,1,hoa$2,Nam,hoa:hi#nam:hello#nam:xinchao$3,Trong,trong:hi hoa#hoa:hi trong"
+        String entries[] = data.split("\\$");
+        for(int i = 1; i < entries.length; i++){
+            String entry[] = entries[i].split(",");
+            String id = entry[0];
+            String name = entry[1];
+            String content = entry[2];
+            clients.add(new clientFormatData(id, name, content));
+        }
+    }
+
+//        public static void main(String[] a) {
 //        JFrame frame = new JFrame("Login");
 //        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 //        frame.setBackground(Color.RED);
@@ -195,17 +199,18 @@ public class homePageClient extends JPanel {
 //        JPanel content = new JPanel();
 //        content.setLayout(cardLayout);
 //        Send send = null;
+//        String datas = "";
+//        String dt = "login,1,hoa$2,Nam,hoa:hi#nam:hello#nam:xinchao$3,Trong,trong:hi hoa,hoa:hi trong";
 //
 ////            content.add(new Login(content, cardLayout, send), "login");
 ////            content.add(new Signup(content, cardLayout), "signup");
-//        content.add(new homePageClient(), "homepage");
+//        content.add(new homePageClient(dt), "homepage");
 //        cardLayout.show(content, "homepage");
 //
 //        frame.add(content);
 //        frame.setBounds(10, 10, 400, 500);
 //        frame.setVisible(true);
 //        frame.setResizable(false);
-//
-//
+
 //    }
 }
