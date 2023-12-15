@@ -56,18 +56,31 @@ class Recieve extends Thread {
         }
         br = new BufferedReader(new InputStreamReader(is));
     }
+
     public void run() {
         try {
             do {
                 this.receiveMsg = this.br.readLine();
+                homePageClient a = null;
+                String datas[] = receiveMsg.split(",");
                 System.out.println("Received : " + receiveMsg);
-                if(this.receiveMsg.equals("login")) {
-
+                if(datas[0].equals("login")) {
+                    a = new homePageClient(datas);
                     // get username.
+                    content.add(a, "homepage");
                     cardLayout.show(content, "homepage");
+                    Thread.sleep(1000);
+                    a.data(0,"1000");
+                    Thread.sleep(2000);
+                    a.data(0,"trong000");
                 }
+//                else if(datas[0].equals("chat")) {
+////                    a.createUi();
+//                }
             }while (true);
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
@@ -106,7 +119,6 @@ public class Clients {
 
         content.add(new Login(content, cardLayout, send), "login");
         content.add(new Signup(content, cardLayout, send), "signup");
-        content.add(new homePageClient(), "homepage");
 
         cardLayout.show(content, "login");
         new Recieve(s, cardLayout, content).start();

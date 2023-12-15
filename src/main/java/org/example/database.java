@@ -1,6 +1,24 @@
 package org.example;
 
 import java.sql.*;
+import java.util.ArrayList;
+
+class UserData {
+    int id;
+    String username;
+    UserData(int id, String username) {
+        this.id = id;
+        this.username = username;
+    }
+
+    public int getId() {
+        return this.id;
+    }
+    String getUsername() {
+        return this.username;
+    }
+
+}
 
 public class database {
     Statement st;
@@ -47,17 +65,18 @@ public class database {
         }
     }
 
-    public int checkLogin(String username, String password) {
-        String checkQuery = "select idClient from Client where username = ? and password = ?";
+    public UserData checkLogin(String username, String password) {
+        String checkQuery = "select idClient, username from Client where username = ? and password = ?";
         try (PreparedStatement preparedStatement = con.prepareStatement(checkQuery)) {
             preparedStatement.setString(1, username);
             preparedStatement.setString(2, password);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 int idClient = resultSet.getInt("idClient");
-                return idClient;
+                String name = resultSet.getString("username");
+                return new UserData(idClient, name);
             } else {
-                return -1;
+                return null;
             }
         } catch (SQLException ex) {
             throw new RuntimeException(ex);

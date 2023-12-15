@@ -6,11 +6,27 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 class ClientOfServer {
-    int id;
-    Socket ss;
-    ClientOfServer(int id, Socket ss) {
+    private int id;
+    private String name;
+    private Socket ss;
+    ClientOfServer(int id, Socket ss, String name) {
         this.id = id;
+        this.name = name;
         this.ss = ss;
+    }
+    int getID() {
+        return this.id;
+    }
+
+    String data() {
+        return this.id + "," + this.name;
+    }
+
+    String getName() {
+        return this.name;
+    }
+    Socket nameSocket() {
+        return this.ss;
     }
 }
 class receiveOfServer extends Thread {
@@ -40,11 +56,16 @@ class receiveOfServer extends Thread {
                 if(data[0].equals("TagSignup")){
                     db.postUser(data[1], data[2]);
                 }else if(data[0].equals("TagLogin")){
-                    int id = db.checkLogin(data[1], data[2]);
-                    if(id != -1) {
-                        clients.add(new ClientOfServer(id, ss));
-                        //send + username + data user
-                        new SendOfServer(ss).sendData("login");
+                    UserData user = db.checkLogin(data[1], data[2]);
+                    SendOfServer send = new SendOfServer(ss);
+                    if(user != null) {
+                        String loginedClient = "login,";
+                        loginedClient += user.getId() + "," + user.getUsername() + ",";
+                        for (ClientOfServer client : clients) {
+                            loginedClient += client.data() + ",";
+                        }
+                        clients.add(new ClientOfServer(user.getId(), ss, user.getUsername()));
+                        send.sendData(loginedClient);
                     }
                 }
             }while (true);

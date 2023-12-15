@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,14 +26,52 @@ class chat {
     }
 }
 
+class TextField extends Thread {
+    JTextArea text;
+    String content;
+    TextField(JTextArea text, String content) {
+        this.text = text;
+        this.content = content;
+    }
+
+    public void run() {
+        try {
+            SwingUtilities.invokeAndWait(new Runnable(){
+                public void run()
+                {
+                    text.append(content);
+                }
+            });
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+
 public class homePageClient extends JPanel {
     String reciever;
-    homePageClient() {
-        createUi();
+    String dataNameUser[];
+
+    homePageClient(String datas[]) {
+        this.dataNameUser = datas;
+        SwingUtilities.invokeLater(() -> createUi());
+//        createUi();
+    }
+    String temp = "";
+    JTextArea text[];
+    public void data(int pos, String s) {
+        SwingUtilities.invokeLater(() -> {
+            this.temp = s;
+            text[pos].append(this.temp + "\n");
+
+        });
     }
 
     static List<chat> convertToChatList(String data) {
         List<chat> chatList = new ArrayList<>();
+
 
         String[] entries = data.split(", ");
         for (String entry : entries) {
@@ -51,9 +90,11 @@ public class homePageClient extends JPanel {
         String data = "me: 123, hoai: 456, me: 111, me: 000";
         List<chat> chatList = convertToChatList(data);
         reciever = a[0];
-        for (chat c : chatList) {
-            System.out.println("ID: " + c.getId() + ", Content: " + c.getContent());
-        }
+//        for (chat c : chatList) {
+//            System.out.println("ID: " + c.getId() + ", Content: " + c.getContent());
+//        }
+
+        System.out.println(temp);
 
         JPanel sidebarPanel = new JPanel();
         JPanel header = new JPanel();
@@ -61,7 +102,8 @@ public class homePageClient extends JPanel {
         JPanel chatBox = new JPanel(cardLayout);
         JPanel contentPanels[] = new JPanel[a.length];
         JLabel contentLabels[] = new JLabel[a.length];
-        JTextArea text[] = new JTextArea[a.length];
+//        JTextArea text[] = new JTextArea[a.length];
+        text = new JTextArea[a.length];
 
         setLayout(new BorderLayout());
         setBackground(Color.white);
@@ -97,9 +139,13 @@ public class homePageClient extends JPanel {
             JPanel footer = new JPanel();
 
             for (chat c : chatList) {
-                text[i].append(c.getId() + ": " + c.getContent() + "\n");
+//                text[i].append(c.getId() + ": " + c.getContent() + "\n");
+                data(i, c.getId() + ": " + c.getContent());
             }
+            System.out.println("temp:::::::" + temp);
 
+//            text[i].append(this.temp);
+//            new TextField(text[i], temp).start();
             contentPanels[i].add(text[i], BorderLayout.CENTER);
 
             input.setFont(new Font("Serif", Font.PLAIN, 20));
