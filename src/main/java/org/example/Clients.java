@@ -45,7 +45,9 @@ class Recieve extends Thread {
     CardLayout cardLayout;
     JPanel content;
     BufferedReader br;
+    Socket ss;
     Recieve ( Socket ss, CardLayout cardLayout, JPanel content) {
+        this.ss = ss;
         InputStream is = null;
         this.cardLayout = cardLayout;
         this.content = content;
@@ -59,30 +61,50 @@ class Recieve extends Thread {
 
     public void run() {
         try {
+            boolean login = false;
+            homePageClient home = null;
             do {
                 this.receiveMsg = this.br.readLine();
-                homePageClient a = null;
-                String datas[] = receiveMsg.split(",");
+                String datas[] = receiveMsg.split(",", -1);
                 System.out.println("Received : " + receiveMsg);
 
                 if(datas[0].equals("login")) {
-                    String dt = "login,1,hoa$2,Nam,hoa:hi#nam:hello#nam:xinchao$3,Trong,trong:hi hoa,hoa:hi trong";
-                    a = new homePageClient(dt);
-                    // get username.
-                    content.add(a, "homepage");
-                    cardLayout.show(content, "homepage");
-                    Thread.sleep(1000);
-                    a.appendContent("3","hello ban nha");
-                    Thread.sleep(2000);
-                    a.appendContent("2","ok ban");
+//                    String dt = "login,1,hoa$2,Nam,hoa:hi#nam:hello#nam:xinchao$3,Trong,trong:hi hoa,hoa:hi trong";
+                    home = new homePageClient(ss, datas[1], datas[2]);
+                    content.add(home, "homepage");
+//                    Thread.sleep(500);
+//                    home.appendSidebar("12", "ngan", "#trinhlongvu:hello#user:hi#trinhlongvu:lau ngay khong gap#trinhlongvu:lau ngay khong gap#user:hi#user:hi#trinhlongvu:nice#trinhlongvu:nice#trinhlongvu:oke#trinhlongvu:oke#" +
+//                            "12312user#trinhlongvu:hello#user:hi#trinhlongvu:lau ngay khong gap#trinhlongvu:lau ngay khong gap#user:hi#user:hi#trinhlongvu:nice#trinhlongvu:nice#trinhlongvu:oke#trinhlongvu:oke#");
+                    login = true;
                 }else if(datas[0].equals("send")) {
                     datas[1] = "12";
                     System.out.println("ok");
                 }
+                if(login == true) {
+                    // get username.
+                    cardLayout.show(content, "homepage");
+//                    home.appendSidebar("4", "ngan", "hoa:hi#nam:hello#ngan:xinchao");
+//                    Thread.sleep(1000);
+//                    home.appendContent("4","hello ban nha");
+//                    Thread.sleep(2000);
+//                    home.appendContent("4","ok ban");
+                    if(datas[0].equals("new")) {
+                        System.out.println("123"+datas[1] + datas[2] +  datas[3] + "");
+//                        datas[1] = "12";
+//                        datas[2] = "ngan";
+//                        datas[3] = "#trinhlongvu:hello#user:hi#trinhlongvu:lau ngay khong gap#trinhlongvu:lau ngay khong gap#user:hi#user:hi#trinhlongvu:nice#trinhlongvu:nice#trinhlongvu:oke#trinhlongvu:oke#" +
+//                                "12312user#trinhlongvu:hello#user:hi#trinhlongvu:lau ngay khong gap#trinhlongvu:lau ngay khong gap#user:hi#user:hi#trinhlongvu:nice#trinhlongvu:nice#trinhlongvu:oke#trinhlongvu:oke#";
+//                        home.appendSidebar("12", "ngan", "#trinhlongvu:hello#user:hi#trinhlongvu:lau ngay khong gap#trinhlongvu:lau ngay khong gap#user:hi#user:hi#trinhlongvu:nice#trinhlongvu:nice#trinhlongvu:oke#trinhlongvu:oke#" +
+//                                "12312user#trinhlongvu:hello#user:hi#trinhlongvu:lau ngay khong gap#trinhlongvu:lau ngay khong gap#user:hi#user:hi#trinhlongvu:nice#trinhlongvu:nice#trinhlongvu:oke#trinhlongvu:oke#");
+                        home.appendSidebar(datas[1], datas[2], datas[3]);
+//                        home.appendSidebar(datas[1], datas[2], datas[3]);
+                    }
+                    if(datas[0].equals(("message"))) {
+                        home.appendContent(datas[1], datas[2]);
+                    }
+                }
             }while (true);
         } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }

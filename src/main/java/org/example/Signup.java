@@ -72,6 +72,7 @@ public class Signup extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 System.out.println("clicked");
                 if(password.getText().equals(cpassword.getText())) {
+                    cardLayout.show(content, "login");
                     send.sendData("TagSignup," + fieldUser.getText() + "," + password.getText());
                 }
             }

@@ -6,15 +6,15 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 class ClientOfServer {
-    private int id;
+    private String id;
     private String name;
     private Socket ss;
-    ClientOfServer(int id, Socket ss, String name) {
+    ClientOfServer(String id, Socket ss, String name) {
         this.id = id;
         this.name = name;
         this.ss = ss;
     }
-    int getID() {
+    String getID() {
         return this.id;
     }
 
@@ -54,28 +54,41 @@ class receiveOfServer extends Thread {
                 System.out.println("Received : " + receiveMsg);
                 String data[] = receiveMsg.split(",");
                 if(data[0].equals("TagSignup")){
-                    db.postUser(data[1], data[2]);
+                    UserData user = db.postUser(data[1], data[2]);
+                    db.insertContenChat(user.getId());
                 }else if(data[0].equals("TagLogin")){
                     UserData user = db.checkLogin(data[1], data[2]);
                     SendOfServer send = new SendOfServer(ss);
                     if(user != null) {
-                        String loginedClient = "login,";
-                        loginedClient += user.getId() + "," + user.getUsername() + ",";
-                        for (ClientOfServer client : clients) {
-                            loginedClient += client.data() + ",";
+                        String loginedClient = "login";
+                        send.sendData(loginedClient + "," + user.getId() + "," + user.getUsername());
+
+                        for(ClientOfServer client : clients) {
+                            SendOfServer sendForPreClient = new SendOfServer(client.nameSocket());
+//                            sendForPreClient.sendData("new," + user.getId() + "," + user.getUsername() + ",hoa:hi#nam:helloaaaa#ngan:xinchaoaaa");
+                            String content =  db.getContentText(client.getID(), user.getId());
+                            sendForPreClient.sendData("new,"+ user.getId() + "," + user.getUsername() + "," + content);
+                            send.sendData("new," + client.getID() + "," + client.getName() + "," + content);
                         }
                         clients.add(new ClientOfServer(user.getId(), ss, user.getUsername()));
-                        send.sendData(loginedClient);
-                        Thread.sleep(1000);
-                        send.sendData("send,2,NguyenDuy,1,NguyenHuyHoa,hello");
+//                        Thread.sleep(1000);
+//                        send.sendData("send,2,NguyenDuy,1,NguyenHuyHoa,hello");
+//                        Thread.sleep(500);/
+//                        send.sendData("new,4,xuan,hoa:hi#nam:helloaaaa#ngan:xinchaoaaa");
                     }
-                }else if(data[0].equals("send")) {
-
+                }else if(data[0].equals("sendMsg")) {
+                    for(ClientOfServer client : clients) {
+                       if(client.getID().equals(data[2])){
+                           db.update(data[1], data[2], data[3] + "#");
+                           new SendOfServer(client.nameSocket()).sendData("message," + data[1] + "," + data[3]);
+                       }
+                    }
+                    System.out.println(data[1]);
+                }else if(data[0].equals("delete")) {
+                    db.deleteContent(data[1], data[2]);
                 }
             }while (true);
         } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }

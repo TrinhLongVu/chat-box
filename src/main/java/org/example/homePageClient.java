@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +37,9 @@ class clientFormatData {
 }
 
 public class homePageClient extends JPanel {
-    String reciever;
+    String reciever = "";
+    String idOfClient;
+    String nameOfClient;
     JPanel sidebarPanel;
     CardLayout cardLayout;
     JPanel chatBox;
@@ -44,10 +47,13 @@ public class homePageClient extends JPanel {
     List<JTextArea> text = new ArrayList<>();
     List<JPanel> contentPanels = new ArrayList<>();
     List<JLabel> contentLabels = new ArrayList<>();
+    Socket ss;
 
-    homePageClient(String data) {
+    homePageClient(Socket ss, String idOfClient, String nameOfClient) {
+        this.idOfClient = idOfClient;
+        this.nameOfClient = nameOfClient;
+        this.ss = ss;
         SwingUtilities.invokeLater(() -> {
-//            SplitData(data);
             createUi();}
         );
     }
@@ -60,11 +66,14 @@ public class homePageClient extends JPanel {
         }
         int finalPos = pos;
         SwingUtilities.invokeLater(() -> {
-            text.get(finalPos).append("\n" + data);
+            text.get(finalPos).append( data + "\n");
         });
     }
     public void appendSidebar(String id, String name, String content) {
         clients.add(new clientFormatData(id, name, content));
+
+        JButton delete = new JButton("Delete");
+
         int pos = 0;
         for (int i = 0; i < clients.size(); i++) {
             if(clients.get(i).getId().equals(id)){
@@ -101,19 +110,32 @@ public class homePageClient extends JPanel {
         input.setFont(new Font("Serif", Font.PLAIN, 20));
         input.setPreferredSize(new Dimension(200, 30));
         JButton submit = new JButton("submit");
+
+
         submit.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         // handle send data to server
-                        text.get(finalPos).append("\nme :" + input.getText());
+                        text.get(finalPos).append( nameOfClient + ":" + input.getText() + "\n");
                         System.out.println(reciever);
-//                            new Send(ss).sendData("send,1,hello");
+                        new Send(ss).sendData("sendMsg," + idOfClient + "," + id + "," + nameOfClient + ":" + input.getText());
+                    }
+                });
+        delete.addActionListener(
+                new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        text.get(finalPos).setText("");
+                        new Send(ss).sendData("delete," + idOfClient + "," + id);
                     }
                 });
 
+        JPanel NamePanel = new JPanel();
+
         SwingUtilities.invokeLater(() -> {
             sidebarPanel.add(button);
-            contentPanels.get(finalPos).add(contentLabels.get(finalPos), BorderLayout.NORTH);
+            NamePanel.add(contentLabels.get(finalPos));
+            NamePanel.add(delete);
+            contentPanels.get(finalPos).add(NamePanel, BorderLayout.NORTH);
             chatBox.add(contentPanels.get(finalPos), clients.get(finalPos).getName());
             contentPanels.get(finalPos).add(text.get(finalPos), BorderLayout.CENTER);
             text.get(finalPos).append(content.replace("#", "\n"));
@@ -125,6 +147,9 @@ public class homePageClient extends JPanel {
 
     void createUi() {
         JPanel header = new JPanel();
+
+
+        JLabel lableHeader = new JLabel(nameOfClient);
         sidebarPanel = new JPanel();
         cardLayout = new CardLayout();
         chatBox = new JPanel(cardLayout);
@@ -137,6 +162,7 @@ public class homePageClient extends JPanel {
         sidebarPanel.setPreferredSize(new Dimension(100, 500));
         sidebarPanel.setBorder(BorderFactory.createLineBorder(Color.black));
         sidebarPanel.setBackground(new Color(0xDFCBE1));
+        header.add(lableHeader);
 
         add(sidebarPanel, BorderLayout.WEST);
         add(chatBox, BorderLayout.CENTER);
@@ -157,18 +183,20 @@ public class homePageClient extends JPanel {
 
 //            content.add(new Login(content, cardLayout, send), "login");
 //            content.add(new Signup(content, cardLayout), "signup");
-        homePageClient home = new homePageClient(dt);
+            Socket ss = null;
+        homePageClient home = new homePageClient(ss, "4", "hello");
         content.add(home, "homepage");
         cardLayout.show(content, "homepage");
             try {
                 Thread.sleep(500);
-                home.appendSidebar("4", "ngan", "hoa:hi#nam:hello#ngan:xinchao");
+                home.appendSidebar("12", "ngan", "#trinhlongvu:hello#user:hi#trinhlongvu:lau ngay khong gap#trinhlongvu:lau ngay khong gap#user:hi#user:hi#trinhlongvu:nice#trinhlongvu:nice#trinhlongvu:oke#trinhlongvu:oke#" +
+                        "12312user#trinhlongvu:hello#user:hi#trinhlongvu:lau ngay khong gap#trinhlongvu:lau ngay khong gap#user:hi#user:hi#trinhlongvu:nice#trinhlongvu:nice#trinhlongvu:oke#trinhlongvu:oke#");
 //                Thread.sleep(300);
-                home.appendSidebar("2", "Nam", "hoa:hi#nam:hello#nam:xinchao");
+//                home.appendSidebar("2", "Nam", "hoa:hi#nam:hello#nam:xinchao");
+////                Thread.sleep(300);
+//                home.appendSidebar("3", "Trong", "trong:hi hoa#hoa:hi trong");
 //                Thread.sleep(300);
-                home.appendSidebar("3", "Trong", "trong:hi hoa#hoa:hi trong");
-//                Thread.sleep(300);
-                home.appendContent("4", "hii");
+//                home.appendContent("4", "hii");
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
