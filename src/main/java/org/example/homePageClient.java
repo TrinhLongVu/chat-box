@@ -1,11 +1,17 @@
 package org.example;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 class clientFormatData {
@@ -36,6 +42,7 @@ class clientFormatData {
     }
 }
 
+
 public class homePageClient extends JPanel {
     String reciever = "";
     String idOfClient;
@@ -44,9 +51,10 @@ public class homePageClient extends JPanel {
     CardLayout cardLayout;
     JPanel chatBox;
     List<clientFormatData> clients = new ArrayList<>();
-    List<JTextArea> text = new ArrayList<>();
+    List<JList> text = new ArrayList<>();
     List<JPanel> contentPanels = new ArrayList<>();
     List<JLabel> contentLabels = new ArrayList<>();
+    List<DefaultListModel> listModel = new ArrayList<>();
     Socket ss;
 
     homePageClient(Socket ss, String idOfClient, String nameOfClient) {
@@ -57,7 +65,30 @@ public class homePageClient extends JPanel {
             createUi();}
         );
     }
-    public void appendContent(String id, String data) {
+
+    private void saveListToFile(List<String> dataList) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Save to File");
+        int userSelection = fileChooser.showSaveDialog(homePageClient.this);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(selectedFile))) {
+                for (String value : dataList) {
+                    writer.write(value);
+                    writer.newLine();
+                }
+                System.out.println("List saved to file: " + selectedFile.getAbsolutePath());
+                JOptionPane.showMessageDialog(this, "File saved successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Error saving file", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    public void appendContent(String id, String data, List<String> file) {
         int pos = 0;
         for (int i = 0; i < clients.size(); i++) {
             if(clients.get(i).getId().equals(id)){
@@ -66,7 +97,19 @@ public class homePageClient extends JPanel {
         }
         int finalPos = pos;
         SwingUtilities.invokeLater(() -> {
-            text.get(finalPos).append( data + "\n");
+            listModel.get(finalPos).addElement(data);
+            text.get(finalPos).addListSelectionListener(new ListSelectionListener() {
+                @Override
+                public void valueChanged(ListSelectionEvent e) {
+                    if (!e.getValueIsAdjusting()) {
+                        String selectedValue = (String) text.get(finalPos).getSelectedValue();
+                        if(selectedValue.equals("file.txt")) {
+                            System.out.println(".....");
+                            saveListToFile(file);
+                        }
+                    }
+                }
+            });
         });
     }
     public void appendSidebar(String id, String name, String content) {
@@ -98,25 +141,43 @@ public class homePageClient extends JPanel {
         );
         contentPanels.add(new JPanel(new BorderLayout()));
         contentLabels.add(new JLabel(clients.get(finalPos).getName()));
-        text.add(new JTextArea());
+        DefaultListModel model = new DefaultListModel<>();
+        text.add(new JList(model));
+        listModel.add(model);
 
         contentPanels.get(finalPos).setBackground(Color.WHITE);
         contentLabels.get(finalPos).setFont(new Font("Serif", Font.PLAIN, 30));
         text.get(finalPos).setFont(new Font("Serif", Font.PLAIN, 20));
-        text.get(finalPos).setEditable(false);
+//        text.get(finalPos).setEditable(false);
         JPanel footer = new JPanel();
         footer.setPreferredSize(new Dimension(300, 30));
         JTextField input = new JTextField();
         input.setFont(new Font("Serif", Font.PLAIN, 20));
-        input.setPreferredSize(new Dimension(200, 30));
+        input.setPreferredSize(new Dimension(100, 30));
         JButton submit = new JButton("submit");
+
+        JButton chooseFile = new JButton("file");
+
+        chooseFile.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            int returnValue = fileChooser.showOpenDialog(null);
+            if (returnValue == JFileChooser.APPROVE_OPTION) {
+                java.io.File selectedFile = fileChooser.getSelectedFile();
+                new SendFile(ss, idOfClient, id ,selectedFile.getAbsolutePath()).start();
+            } else {
+                System.out.println("No file chosen.");
+            }
+        });
+
+
 
 
         submit.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         // handle send data to server
-                        text.get(finalPos).append( nameOfClient + ":" + input.getText() + "\n");
+//                        text.get(finalPos).append( nameOfClient + ":" + input.getText() + "\n");
+                        listModel.get(finalPos).addElement(nameOfClient + ":" + input.getText());
                         System.out.println(reciever);
                         new Send(ss).sendData("sendMsg," + idOfClient + "," + id + "," + nameOfClient + ":" + input.getText());
                     }
@@ -124,7 +185,8 @@ public class homePageClient extends JPanel {
         delete.addActionListener(
                 new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
-                        text.get(finalPos).setText("");
+//                        text.get(finalPos).setText("");
+                        listModel.get(finalPos).removeAllElements();;
                         new Send(ss).sendData("delete," + idOfClient + "," + id);
                     }
                 });
@@ -138,9 +200,13 @@ public class homePageClient extends JPanel {
             contentPanels.get(finalPos).add(NamePanel, BorderLayout.NORTH);
             chatBox.add(contentPanels.get(finalPos), clients.get(finalPos).getName());
             contentPanels.get(finalPos).add(text.get(finalPos), BorderLayout.CENTER);
-            text.get(finalPos).append(content.replace("#", "\n"));
+//            text.get(finalPos).append(content.replace("#", "\n"));
+            String data[] = content.split("#");
+            for(String dt: data)
+                listModel.get(finalPos).addElement(dt);
             footer.add(input);
             footer.add(submit);
+            footer.add(chooseFile);
             contentPanels.get(finalPos).add(footer, BorderLayout.SOUTH);
         });
     }
@@ -189,14 +255,13 @@ public class homePageClient extends JPanel {
         cardLayout.show(content, "homepage");
             try {
                 Thread.sleep(500);
-                home.appendSidebar("12", "ngan", "#trinhlongvu:hello#user:hi#trinhlongvu:lau ngay khong gap#trinhlongvu:lau ngay khong gap#user:hi#user:hi#trinhlongvu:nice#trinhlongvu:nice#trinhlongvu:oke#trinhlongvu:oke#" +
-                        "12312user#trinhlongvu:hello#user:hi#trinhlongvu:lau ngay khong gap#trinhlongvu:lau ngay khong gap#user:hi#user:hi#trinhlongvu:nice#trinhlongvu:nice#trinhlongvu:oke#trinhlongvu:oke#");
+                home.appendSidebar("12", "ngan", "#trinhlongvu:hello#user:hi");
 //                Thread.sleep(300);
 //                home.appendSidebar("2", "Nam", "hoa:hi#nam:hello#nam:xinchao");
 ////                Thread.sleep(300);
 //                home.appendSidebar("3", "Trong", "trong:hi hoa#hoa:hi trong");
 //                Thread.sleep(300);
-//                home.appendContent("4", "hii");
+                home.appendContent("4", "file.txt", null);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

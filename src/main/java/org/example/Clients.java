@@ -5,6 +5,52 @@ import java.awt.*;
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
+
+class SendFile extends Thread {
+    BufferedWriter bw ;
+    String file;
+    Socket ss;
+    String idSend;
+    String idRecieve;
+    SendFile(Socket ss, String idSend, String idRecieve, String file) {
+        this.idSend = idSend;
+        this.idRecieve = idRecieve;
+        this.ss =ss;
+        OutputStream os = null;
+        this.file = file;
+        try {
+            os = ss.getOutputStream();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        bw = new BufferedWriter(new OutputStreamWriter(os));
+    }
+
+    public void run() {
+        File fileToSend = new File(file);
+        try {
+                String line = "";
+                BufferedReader buff = new BufferedReader(new FileReader(fileToSend));
+                while ((line = buff.readLine()) != null) {
+                    bw.write("file," + idSend + "," + idRecieve + "," + line);
+                    bw.newLine();
+                    bw.flush();
+                }
+                bw.write("file" + "," + idSend + "," + idRecieve + "," + "end");
+                bw.newLine();
+                bw.flush();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+
 class Send extends Thread {
     BufferedWriter bw ;
     Send(Socket ss) {
@@ -25,23 +71,26 @@ class Send extends Thread {
             throw new RuntimeException(e);
         }
     }
-    public void run() {
-        try {
-            do {
-                DataInputStream din = new DataInputStream(System.in);
-                String k = null;
-                k = din.readLine();
-                bw.write(k);
-                bw.newLine();
-                bw.flush();
-            }while (true);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+
+//    public void run() {
+//        try {
+//            do {
+//                DataInputStream din = new DataInputStream(System.in);
+//                String k = null;
+//                k = din.readLine();
+//                bw.write(k);
+//                bw.newLine();
+//                bw.flush();
+//            }while (true);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 }
 class Recieve extends Thread {
     String receiveMsg = "";
+    ReentrantLock lock = new ReentrantLock();
+    List<String> file = new ArrayList<>();
     CardLayout cardLayout;
     JPanel content;
     BufferedReader br;
@@ -100,7 +149,30 @@ class Recieve extends Thread {
 //                        home.appendSidebar(datas[1], datas[2], datas[3]);
                     }
                     if(datas[0].equals(("message"))) {
-                        home.appendContent(datas[1], datas[2]);
+                        home.appendContent(datas[1], datas[2], null);
+                    }
+                    else if(datas[0].equals("file")) {
+//                        try {
+                             if(datas[2].equals("end")){{
+                                 home.appendContent(datas[1], "file.txt", file);
+                                 file.clear();
+                             }}
+                             file.add(datas[2]);
+
+//                            lock.lock();
+//                            System.out.println("locked");
+//                            List<String> data = new ArrayList<>();
+//                            do {
+//                                String line[] = br.readLine().split(",");
+//                                if(line[2].equals("end"))
+//                                    break;
+//                                data.add(line[2]);
+//                            }while(true);
+//                            System.out.println("okdanhan");
+//                            home.appendContent(datas[1], "file.txt", data);
+//                        } finally {
+////                            lock.unlock();
+//                        }
                     }
                 }
             }while (true);

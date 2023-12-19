@@ -29,6 +29,7 @@ class ClientOfServer {
         return this.ss;
     }
 }
+
 class receiveOfServer extends Thread {
     String receiveMsg = "";
     database db;
@@ -86,6 +87,13 @@ class receiveOfServer extends Thread {
                     System.out.println(data[1]);
                 }else if(data[0].equals("delete")) {
                     db.deleteContent(data[1], data[2]);
+                }else if(data[0].equals("file")) {
+                    for(ClientOfServer client : clients) {
+                        if(client.getID().equals(data[2])){
+                            System.out.println("file," + data[1] + "," + data[3]);
+                            new SendOfServer(client.nameSocket()).sendData("file," + data[1] + "," + data[3]);
+                        }
+                    }
                 }
             }while (true);
         } catch (IOException e) {
