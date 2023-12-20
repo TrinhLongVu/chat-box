@@ -55,6 +55,11 @@ public class homePageClient extends JPanel {
     List<JPanel> contentPanels = new ArrayList<>();
     List<JLabel> contentLabels = new ArrayList<>();
     List<DefaultListModel> listModel = new ArrayList<>();
+    JButton group = new JButton("group");
+    DefaultListModel<String> groupModel = new DefaultListModel<>();
+    JList<String> groupList = new JList<>(groupModel);
+    JPanel groupPanel = new JPanel();
+    JButton groupSlect = new JButton("Display Selected Items");
     Socket ss;
 
     homePageClient(Socket ss, String idOfClient, String nameOfClient) {
@@ -164,11 +169,11 @@ public class homePageClient extends JPanel {
             if (returnValue == JFileChooser.APPROVE_OPTION) {
                 java.io.File selectedFile = fileChooser.getSelectedFile();
                 new SendFile(ss, idOfClient, id ,selectedFile.getAbsolutePath()).start();
+                listModel.get(finalPos).addElement("file.txt");
             } else {
                 System.out.println("No file chosen.");
             }
         });
-
 
 
 
@@ -177,9 +182,14 @@ public class homePageClient extends JPanel {
                     public void actionPerformed(ActionEvent e) {
                         // handle send data to server
 //                        text.get(finalPos).append( nameOfClient + ":" + input.getText() + "\n");
-                        listModel.get(finalPos).addElement(nameOfClient + ":" + input.getText());
-                        System.out.println(reciever);
-                        new Send(ss).sendData("sendMsg," + idOfClient + "," + id + "," + nameOfClient + ":" + input.getText());
+                        if(id.contains("group")) {
+                            System.out.println("group...." + id);
+                            new Send(ss).sendData("sendGroup,%" + id + "%" + nameOfClient + ":" + input.getText());
+                        } else {
+                            listModel.get(finalPos).addElement(nameOfClient + ":" + input.getText());
+                            new Send(ss).sendData("sendMsg," + idOfClient + "," + id + "," + nameOfClient + ":" + input.getText());
+                        }
+
                     }
                 });
         delete.addActionListener(
@@ -204,16 +214,18 @@ public class homePageClient extends JPanel {
             String data[] = content.split("#");
             for(String dt: data)
                 listModel.get(finalPos).addElement(dt);
+
+            groupModel.addElement(clients.get(finalPos).getName());
             footer.add(input);
             footer.add(submit);
             footer.add(chooseFile);
             contentPanels.get(finalPos).add(footer, BorderLayout.SOUTH);
+            chatBox.add(groupPanel, "group");
         });
     }
 
     void createUi() {
         JPanel header = new JPanel();
-
 
         JLabel lableHeader = new JLabel(nameOfClient);
         sidebarPanel = new JPanel();
@@ -229,13 +241,47 @@ public class homePageClient extends JPanel {
         sidebarPanel.setBorder(BorderFactory.createLineBorder(Color.black));
         sidebarPanel.setBackground(new Color(0xDFCBE1));
         header.add(lableHeader);
+        header.add(group);
+        groupPanel.add(groupList);
+        groupPanel.add(groupSlect);
+
+        group.addActionListener(e -> {
+            cardLayout.show(chatBox, "group");
+        });
+
+        groupSlect.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                int[] selectedIndices = groupList.getSelectedIndices();
+
+                StringBuilder selectedItems = new StringBuilder("");
+                for (int index : selectedIndices) {
+                    selectedItems.append(groupModel.getElementAt(index)).append(",");
+                }
+
+                String user[] = selectedItems.toString().split(",");
+                StringBuilder id = new StringBuilder("");
+
+                for (int i = 0; i < clients.size(); i++) {
+                    for(int j = 0; j < user.length; j++) {
+                        if(clients.get(i).getName().equals(user[j])){
+                            id.append("," + clients.get(i).getId());
+                        }
+                    }
+                }
+
+                new Send(ss).sendData("group," + idOfClient + id);
+//                System.out.println(id.get(0) +" ... " + id.get(1));
+            }
+        });
 
         add(sidebarPanel, BorderLayout.WEST);
         add(chatBox, BorderLayout.CENTER);
         add(header, BorderLayout.NORTH);
     }
 
-        public static void main(String[] a) {
+    public static void main(String[] a) {
         JFrame frame = new JFrame("Login");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setBackground(Color.RED);
@@ -256,6 +302,7 @@ public class homePageClient extends JPanel {
             try {
                 Thread.sleep(500);
                 home.appendSidebar("12", "ngan", "#trinhlongvu:hello#user:hi");
+                home.appendSidebar("13", "nam", "#nam:hello#ngan:hi");
 //                Thread.sleep(300);
 //                home.appendSidebar("2", "Nam", "hoa:hi#nam:hello#nam:xinchao");
 ////                Thread.sleep(300);

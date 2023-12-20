@@ -4,6 +4,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.List;
 
 class ClientOfServer {
     private String id;
@@ -72,10 +73,18 @@ class receiveOfServer extends Thread {
                             send.sendData("new," + client.getID() + "," + client.getName() + "," + content);
                         }
                         clients.add(new ClientOfServer(user.getId(), ss, user.getUsername()));
-//                        Thread.sleep(1000);
-//                        send.sendData("send,2,NguyenDuy,1,NguyenHuyHoa,hello");
-//                        Thread.sleep(500);/
-//                        send.sendData("new,4,xuan,hoa:hi#nam:helloaaaa#ngan:xinchaoaaa");
+                        List<String> group = db.selectContentGroup();
+
+                        for(int i = 0; i < group.size(); i++){
+                            String idAndContent[] = group.get(i).split("%");
+                            String dataGroup[] = idAndContent[0].split(",");
+                            for(int j = 1; j < dataGroup.length; j++){
+                                if(user.getId().equals(dataGroup[j])){
+                                    System.out.println("data...." + dataGroup[dataGroup.length -1]);
+                                    send.sendData("group,%" + idAndContent[0] + "%" + idAndContent[1]);
+                                }
+                            }
+                        }
                     }
                 }else if(data[0].equals("sendMsg")) {
                     for(ClientOfServer client : clients) {
@@ -92,6 +101,26 @@ class receiveOfServer extends Thread {
                         if(client.getID().equals(data[2])){
                             System.out.println("file," + data[1] + "," + data[3]);
                             new SendOfServer(client.nameSocket()).sendData("file," + data[1] + "," + data[3]);
+                        }
+                    }
+                }else if(data[0].equals("group")) {
+                    db.insertContenChatGroup(receiveMsg);
+                    for(int i = 1; i < data.length; i++){
+                        for(ClientOfServer client : clients) {
+                            if(client.getID().equals(data[i])){
+                            System.out.println(data[i]);
+                                new SendOfServer(client.nameSocket()).sendData("group,%" + receiveMsg);
+                            }
+                        }
+                    }
+                } else if(data[0].equals("sendGroup")) {
+                    db.updateGroup(receiveMsg.split("%")[1], receiveMsg.split("%")[2]);
+                    for(int i = 1; i < data.length; i++){
+                        for(ClientOfServer client : clients) {
+                            if(client.getID().equals(data[i])){
+                                System.out.println(data[i]);
+                                new SendOfServer(client.nameSocket()).sendData(receiveMsg);
+                            }
                         }
                     }
                 }

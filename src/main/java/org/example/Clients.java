@@ -118,35 +118,15 @@ class Recieve extends Thread {
                 System.out.println("Received : " + receiveMsg);
 
                 if(datas[0].equals("login")) {
-//                    String dt = "login,1,hoa$2,Nam,hoa:hi#nam:hello#nam:xinchao$3,Trong,trong:hi hoa,hoa:hi trong";
-                    home = new homePageClient(ss, datas[1], datas[2]);
+                   home = new homePageClient(ss, datas[1], datas[2]);
                     content.add(home, "homepage");
-//                    Thread.sleep(500);
-//                    home.appendSidebar("12", "ngan", "#trinhlongvu:hello#user:hi#trinhlongvu:lau ngay khong gap#trinhlongvu:lau ngay khong gap#user:hi#user:hi#trinhlongvu:nice#trinhlongvu:nice#trinhlongvu:oke#trinhlongvu:oke#" +
-//                            "12312user#trinhlongvu:hello#user:hi#trinhlongvu:lau ngay khong gap#trinhlongvu:lau ngay khong gap#user:hi#user:hi#trinhlongvu:nice#trinhlongvu:nice#trinhlongvu:oke#trinhlongvu:oke#");
                     login = true;
-                }else if(datas[0].equals("send")) {
-                    datas[1] = "12";
-                    System.out.println("ok");
                 }
                 if(login == true) {
-                    // get username.
                     cardLayout.show(content, "homepage");
-//                    home.appendSidebar("4", "ngan", "hoa:hi#nam:hello#ngan:xinchao");
-//                    Thread.sleep(1000);
-//                    home.appendContent("4","hello ban nha");
-//                    Thread.sleep(2000);
-//                    home.appendContent("4","ok ban");
                     if(datas[0].equals("new")) {
                         System.out.println("123"+datas[1] + datas[2] +  datas[3] + "");
-//                        datas[1] = "12";
-//                        datas[2] = "ngan";
-//                        datas[3] = "#trinhlongvu:hello#user:hi#trinhlongvu:lau ngay khong gap#trinhlongvu:lau ngay khong gap#user:hi#user:hi#trinhlongvu:nice#trinhlongvu:nice#trinhlongvu:oke#trinhlongvu:oke#" +
-//                                "12312user#trinhlongvu:hello#user:hi#trinhlongvu:lau ngay khong gap#trinhlongvu:lau ngay khong gap#user:hi#user:hi#trinhlongvu:nice#trinhlongvu:nice#trinhlongvu:oke#trinhlongvu:oke#";
-//                        home.appendSidebar("12", "ngan", "#trinhlongvu:hello#user:hi#trinhlongvu:lau ngay khong gap#trinhlongvu:lau ngay khong gap#user:hi#user:hi#trinhlongvu:nice#trinhlongvu:nice#trinhlongvu:oke#trinhlongvu:oke#" +
-//                                "12312user#trinhlongvu:hello#user:hi#trinhlongvu:lau ngay khong gap#trinhlongvu:lau ngay khong gap#user:hi#user:hi#trinhlongvu:nice#trinhlongvu:nice#trinhlongvu:oke#trinhlongvu:oke#");
                         home.appendSidebar(datas[1], datas[2], datas[3]);
-//                        home.appendSidebar(datas[1], datas[2], datas[3]);
                     }
                     if(datas[0].equals(("message"))) {
                         home.appendContent(datas[1], datas[2], null);
@@ -173,6 +153,18 @@ class Recieve extends Thread {
 //                        } finally {
 ////                            lock.unlock();
 //                        }
+                    }
+                    else if(datas[0].equals("group")) {
+                        System.out.println(datas[datas.length - 1]);
+                        String gr[] = receiveMsg.split("%");
+                        System.out.println(receiveMsg);
+                        System.out.println(gr[2]);
+                        home.appendSidebar(gr[1], "GROUP", gr[2]);
+                    }
+                    else if(datas[0].equals("sendGroup")){
+                        System.out.println(receiveMsg);
+                        String gr[] = receiveMsg.split("%");
+                        home.appendContent(gr[1], gr[2], null);
                     }
                 }
             }while (true);
@@ -212,7 +204,6 @@ public class Clients {
         CardLayout cardLayout = new CardLayout();
         JPanel content = new JPanel();
         content.setLayout(cardLayout);
-//        JPanel homepage = new homePageClient(datas);
 
         content.add(new Login(content, cardLayout, send), "login");
         content.add(new Signup(content, cardLayout, send), "signup");

@@ -51,5 +51,7 @@ public class client1 {
 
     public static void main(String[] a){
         new client1();
+        new client1();
+        new client1();
     }
 }

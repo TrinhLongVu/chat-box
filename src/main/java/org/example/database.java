@@ -1,6 +1,8 @@
 package org.example;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 class UserData {
     String id;
@@ -75,7 +77,7 @@ public class database {
 
                 try (PreparedStatement st = con.prepareStatement(insertQuery)) {
                     st.setString(1, id + "," + idClient);
-                    st.setString(2, "");
+                    st.setString(2, "#");
                     int rowsAffected = st.executeUpdate();
                     if (rowsAffected > 0) {
                         System.out.println("Data inserted successfully!");
@@ -92,6 +94,41 @@ public class database {
             throw new RuntimeException(ex);
         }
 
+    }
+
+    public void insertContenChatGroup(String id) {
+        String insertQuery = "INSERT INTO Content (idContent, content) VALUES (?, ?)";
+        try (PreparedStatement st = con.prepareStatement(insertQuery)) {
+            st.setString(1, id);
+            st.setString(2, "#");
+            int rowsAffected = st.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Data inserted successfully!");
+            } else {
+                System.out.println("Failed to insert data.");
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public List<String> selectContentGroup() {
+        String sqlQuery = "SELECT * FROM Content WHERE idContent LIKE 'group,%'";
+        List<String> ids = new ArrayList<>();
+
+        try (PreparedStatement preparedStatement = con.prepareStatement(sqlQuery)) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            while (resultSet.next()) {
+                // Assuming "idContent" is the correct column name. Adjust if needed.
+                String idContent = resultSet.getString("idContent");
+                String content = resultSet.getString("content");
+                ids.add(idContent + "%" + content);
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+        return ids;
     }
 
     public UserData checkLogin(String username, String password) {
@@ -149,6 +186,25 @@ public class database {
         }
     }
 
+    public void updateGroup(String idContent, String content) {
+        String updateQuery = "UPDATE Content SET content = CONCAT(content, ?) WHERE (idContent = ?)";
+
+        try (PreparedStatement preparedStatement = con.prepareStatement(updateQuery)) {
+            preparedStatement.setString(1, content);
+            preparedStatement.setString(2, idContent);
+
+            int affectedRows = preparedStatement.executeUpdate();
+
+            if (affectedRows > 0) {
+                System.out.println("Update successful.");
+            } else {
+                System.out.println("No rows updated. idContent not found.");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void closeConnect() throws SQLException {
         this.con.close();
     }
@@ -174,7 +230,10 @@ public class database {
     }
     public static void main(String args[]) throws SQLException {
         database a = new database();
-        a.update("12", "13", "user:12356#");
-        System.out.println("print:" + a.getContentText("12", "13"));
+//        a.update("12", "13", "user:12356#");
+//        a.insertContenChatGroup("group,2,3,4,5");
+        List<String> temp = a.selectContentGroup();
+        String aaa[] = temp.get(0).split(",");
+        System.out.println("print:" + aaa[aaa.length - 1]);
     }
 }
