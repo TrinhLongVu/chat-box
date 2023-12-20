@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="Socket:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Socket_jar</output-path>
+    <root id="archive" name="Socket.jar">
+      <element id="module-output" name="Socket" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../sqljdbc_12.4.2.0_enu/sqljdbc_12.4/enu/jars/mssql-jdbc-12.4.2.jre8.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../sqljdbc_12.4.2.0_enu/sqljdbc_12.4/enu/jars/mssql-jdbc-12.4.2.jre11.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../sqljdbc_12.4.2.0_enu/sqljdbc_12.4/enu/jars/mssql-jdbc-12.4.2.jre8-javadoc.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../sqljdbc_12.4.2.0_enu/sqljdbc_12.4/enu/jars/mssql-jdbc-12.4.2.jre8-sources.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../sqljdbc_12.4.2.0_enu/sqljdbc_12.4/enu/jars/mssql-jdbc-12.4.2.jre11-javadoc.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../sqljdbc_12.4.2.0_enu/sqljdbc_12.4/enu/jars/mssql-jdbc-12.4.2.jre11-sources.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
